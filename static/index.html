@@ -176,6 +176,7 @@
     <div id="scores-wrap"></div>
   </div>
 
+  <div id="detect-timer" style="display:none;text-align:center;font-size:2.5rem;color:var(--accent);margin:8px 0;letter-spacing:4px">7s</div>
   <div class="status-msg" id="detect-status"></div>
 </div>
 
@@ -338,14 +339,24 @@ function scheduleDetectChunk() {
   detectRecorder.ondataavailable = e => { if (e.data.size > 0) detectChunks.push(e.data); };
   detectRecorder.onstop = async () => {
     if (!detecting || detectSessionId !== mySession) return;
+    document.getElementById('detect-timer').style.display = 'none';
     const blob = new Blob(detectChunks, {type: detectRecorder.mimeType});
     await sendDetectChunk(blob);
     scheduleDetectChunk();
   };
   detectRecorder.start();
+  startTimer(7, mySession);
   setTimeout(() => {
     if (detectRecorder && detectRecorder.state !== 'inactive') detectRecorder.stop();
   }, 7000);
+}
+
+function startTimer(seconds, session) {
+  const el = document.getElementById('detect-timer');
+  el.style.display = 'block';
+  el.textContent = seconds + 's';
+  if (seconds <= 0 || detectSessionId !== session) return;
+  setTimeout(() => startTimer(seconds - 1, session), 1000);
 }
 
 async function sendDetectChunk(blob) {

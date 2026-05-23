@@ -1,7 +1,7 @@
 import os
 
-THRESHOLD_VALID   = 0.75   # cosine >= 0.75 → VALID
-THRESHOLD_SUSPECT = 0.50   # cosine >= 0.50 → SUSPECT, else ALERT
+THRESHOLD_VALID   = 0.65   # cosine >= 0.65 → VALID
+THRESHOLD_SUSPECT = 0.45   # cosine >= 0.45 → SUSPECT, else ALERT
 
 ENROLLMENT_QUESTIONS = 4
 SESSION_TTL          = 900   # 15 min

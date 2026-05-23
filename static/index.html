@@ -342,7 +342,7 @@ function scheduleDetectChunk() {
     document.getElementById('detect-timer').style.display = 'none';
     const blob = new Blob(detectChunks, {type: detectRecorder.mimeType});
     await sendDetectChunk(blob);
-    scheduleDetectChunk();
+    stopDetect();
   };
   detectRecorder.start();
   startTimer(7, mySession);

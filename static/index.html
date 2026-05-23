@@ -157,7 +157,7 @@
     <h2>DETECTARE LIVE</h2>
     <p style="color:var(--dim);font-size:0.78rem;margin-bottom:20px;line-height:1.6">
       Pornește monitorizarea. Browserul va cere permisiunea de a partaja audio sistem sau microfon.<br>
-      Scorul se actualizează la fiecare 4s.
+      Înregistrează 7 secunde, analizează vocea, apoi se oprește automat.
     </p>
     <button class="btn" id="btn-start-detect" onclick="startDetect()">&#9654; START MONITORIZARE</button>
     <button class="btn danger" id="btn-stop-detect" onclick="stopDetect()" disabled style="display:none">&#9632; STOP</button>
@@ -314,7 +314,7 @@ async function startDetect() {
     document.getElementById('btn-stop-detect').style.display = 'inline-block';
     document.getElementById('btn-stop-detect').disabled = false;
     document.getElementById('detect-result-card').style.display = 'block';
-    setStatus('detect-status', 'Monitorizare activă — chunk la fiecare 4s');
+    setStatus('detect-status', 'Înregistrare 7s — se oprește automat...');
     scheduleDetectChunk();
   } catch(e) {
     setStatus('detect-status', 'Eroare microfon: ' + e.message, 'err');
@@ -331,9 +331,11 @@ function scheduleDetectChunk() {
   detectRecorder.onstop = async () => {
     if (!detecting || detectSessionId !== mySession) return;
     document.getElementById('detect-timer').style.display = 'none';
+    setStatus('detect-status', 'Se analizează...');
     const blob = new Blob(detectChunks, {type: detectRecorder.mimeType});
     await sendDetectChunk(blob);
     stopDetect();
+    setStatus('detect-status', 'Analiză completă. Apasă START pentru o nouă măsurătoare.');
   };
   detectRecorder.start();
   startTimer(7, mySession);

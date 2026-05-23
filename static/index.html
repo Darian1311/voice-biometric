@@ -307,18 +307,7 @@ let detectSessionId = 0;
 
 async function startDetect() {
   try {
-    // Try system audio capture first; fall back to mic
-    let stream;
-    try {
-      stream = await navigator.mediaDevices.getDisplayMedia({video:true, audio:true});
-      // If no audio track, fall back
-      if (!stream.getAudioTracks().length) {
-        stream.getTracks().forEach(t => t.stop());
-        throw new Error('no audio');
-      }
-    } catch(_) {
-      stream = await navigator.mediaDevices.getUserMedia({audio:true});
-    }
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
     detectStream = stream;
     detecting = true;
     document.getElementById('btn-start-detect').style.display = 'none';

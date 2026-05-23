@@ -1,6 +1,16 @@
 import io
+import os
 from pydub import AudioSegment
+from pydub.utils import which
 from app.config import MIN_AUDIO_MS
+
+_FFMPEG_WINGET = (
+    r"C:\Users\HOME\AppData\Local\Microsoft\WinGet\Packages"
+    r"\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe"
+    r"\ffmpeg-8.1.1-full_build\bin\ffmpeg.exe"
+)
+if not which("ffmpeg") and os.path.exists(_FFMPEG_WINGET):
+    AudioSegment.converter = _FFMPEG_WINGET
 
 TARGET_SR    = 16000
 TARGET_CH    = 1

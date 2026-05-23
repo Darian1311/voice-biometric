@@ -173,6 +173,8 @@
       <div class="gauge-match" id="gauge-match"></div>
     </div>
     <div class="alert-banner" id="alert-banner">&#9888; ALERTĂ — VOCE NECUNOSCUTĂ / POSIBIL SCAMMER</div>
+    <div class="alert-banner" id="clone-banner" style="border-color:#ff00ff;color:#ff00ff;background:rgba(255,0,255,0.1)">&#129302; CLONE DETECTAT — VOCE SINTETICĂ / AI</div>
+    <div id="spoof-info" style="color:var(--dim);font-size:0.75rem;text-align:center;margin-top:4px"></div>
     <div id="scores-wrap"></div>
   </div>
 
@@ -389,8 +391,11 @@ function updateGauge(res) {
   document.getElementById('gauge-label').className = 'gauge-label color-' + colorClass;
   document.getElementById('gauge-match').textContent = res.best_match ? 'Best match: ' + res.best_match : '';
 
-  const banner = document.getElementById('alert-banner');
-  banner.style.display = verdict === 'ALERT' ? 'block' : 'none';
+  document.getElementById('alert-banner').style.display = verdict === 'ALERT' ? 'block' : 'none';
+  document.getElementById('clone-banner').style.display = verdict === 'CLONE_ALERT' ? 'block' : 'none';
+  if (res.spoof_verdict) {
+    document.getElementById('spoof-info').textContent = `Anti-spoof: ${res.spoof_verdict} (${res.spoof_pct}% sintetic)`;
+  }
 
   // Scores table
   const wrap = document.getElementById('scores-wrap');

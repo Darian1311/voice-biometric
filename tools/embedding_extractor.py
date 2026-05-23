@@ -1,10 +1,11 @@
 import io
 import os
+
+os.environ["SPEECHBRAIN_LOCAL_STRATEGY"] = "copy"
+
 import numpy as np
 import torch
 import torchaudio
-
-os.environ.setdefault("SPEECHBRAIN_LOCAL_STRATEGY", "copy")
 
 _encoder = None
 
@@ -13,11 +14,13 @@ def get_encoder():
     global _encoder
     if _encoder is None:
         from speechbrain.inference.speaker import EncoderClassifier
+        from speechbrain.utils.fetching import LocalStrategy
         from app.config import MODELS_DIR
         _encoder = EncoderClassifier.from_hparams(
             source="speechbrain/spkrec-ecapa-voxceleb",
             savedir=MODELS_DIR,
             use_auth_token=False,
+            local_strategy=LocalStrategy.COPY,
         )
     return _encoder
 

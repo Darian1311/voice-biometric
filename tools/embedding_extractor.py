@@ -19,18 +19,25 @@ def get_encoder():
         _encoder = EncoderClassifier.from_hparams(
             source="speechbrain/spkrec-ecapa-voxceleb",
             savedir=MODELS_DIR,
-            use_auth_token=False,
             local_strategy=LocalStrategy.COPY,
         )
     return _encoder
 
 
 def wav_bytes_to_embedding(wav_bytes: bytes) -> np.ndarray:
-    waveform, sr = torchaudio.load(io.BytesIO(wav_bytes))
+    from scipy.io import wavfile
+    sr, data = wavfile.read(io.BytesIO(wav_bytes))
+    if data.dtype == np.int16:
+        data = data.astype(np.float32) / 32768.0
+    elif data.dtype == np.int32:
+        data = data.astype(np.float32) / 2147483648.0
+    else:
+        data = data.astype(np.float32)
+    if data.ndim > 1:
+        data = data.mean(axis=1)
+    waveform = torch.tensor(data).unsqueeze(0)
     if sr != 16000:
         waveform = torchaudio.functional.resample(waveform, sr, 16000)
-    if waveform.shape[0] > 1:
-        waveform = waveform.mean(0, keepdim=True)
     encoder = get_encoder()
     with torch.no_grad():
         emb = encoder.encode_batch(waveform).squeeze().numpy()

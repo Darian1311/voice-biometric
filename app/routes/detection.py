@@ -14,8 +14,13 @@ async def analyze(audio: UploadFile = File(...)):
         wav = webm_to_wav_bytes(raw)
     except ValueError as e:
         raise HTTPException(400, str(e))
+    except Exception as e:
+        raise HTTPException(400, f"Conversie audio esuata: {e}")
 
-    emb = wav_bytes_to_embedding(wav)
+    try:
+        emb = wav_bytes_to_embedding(wav)
+    except Exception as e:
+        raise HTTPException(500, f"Eroare embedding: {e}")
     profiles = load_all_profiles()
 
     if not profiles:

@@ -298,9 +298,9 @@ function resetEnroll() {
 // ── Detection ──
 let detectStream = null;
 let detectRecorder = null;
-let detectInterval = null;
 let detectChunks = [];
 let detecting = false;
+let detectSessionId = 0;
 
 async function startDetect() {
   try {
@@ -331,12 +331,13 @@ async function startDetect() {
 
 function scheduleDetectChunk() {
   if (!detecting) return;
+  const mySession = detectSessionId;
   detectChunks = [];
   const audioStream = new MediaStream(detectStream.getAudioTracks());
   detectRecorder = new MediaRecorder(audioStream, {mimeType: bestMime()});
   detectRecorder.ondataavailable = e => { if (e.data.size > 0) detectChunks.push(e.data); };
   detectRecorder.onstop = async () => {
-    if (!detecting) return;
+    if (!detecting || detectSessionId !== mySession) return;
     const blob = new Blob(detectChunks, {type: detectRecorder.mimeType});
     await sendDetectChunk(blob);
     scheduleDetectChunk();
@@ -344,7 +345,7 @@ function scheduleDetectChunk() {
   detectRecorder.start();
   setTimeout(() => {
     if (detectRecorder && detectRecorder.state !== 'inactive') detectRecorder.stop();
-  }, 4000);
+  }, 7000);
 }
 
 async function sendDetectChunk(blob) {
@@ -399,7 +400,9 @@ function updateGauge(res) {
 
 function stopDetect() {
   detecting = false;
+  detectSessionId++;
   if (detectRecorder && detectRecorder.state !== 'inactive') detectRecorder.stop();
+  detectRecorder = null;
   if (detectStream) { detectStream.getTracks().forEach(t => t.stop()); detectStream = null; }
   document.getElementById('btn-start-detect').style.display = 'inline-block';
   document.getElementById('btn-stop-detect').style.display = 'none';

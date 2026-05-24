@@ -92,7 +92,10 @@ def enroll_finish(body: FinishBody):
         raise HTTPException(400, "Nicio înregistrare primită")
 
     final_emb = average_embeddings(session["embeddings"])
-    save_profile(session["name"], final_emb, questions_count=len(session["embeddings"]))
+    try:
+        save_profile(session["name"], final_emb, questions_count=len(session["embeddings"]))
+    except ValueError as e:
+        raise HTTPException(400, str(e))
     session_store.delete_session(body.session_id)
 
     return {"status": "enrolled", "name": session["name"], "embedding_dim": len(final_emb)}

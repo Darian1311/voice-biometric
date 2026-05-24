@@ -33,13 +33,19 @@ def save_profile(name: str, embedding: np.ndarray, questions_count: int = 4):
     blob = base64.b64encode(embedding.astype(np.float32).tobytes()).decode()
     now = datetime.utcnow().isoformat()
     h = {**headers, "Prefer": "resolution=merge-duplicates,return=representation"}
-    httpx.post(url, headers=h, json={
-        "name": name,
-        "embedding": blob,
-        "embedding_dim": int(len(embedding)),
-        "questions_count": questions_count,
-        "enrolled_at": now,
-    }).raise_for_status()
+    try:
+        res = httpx.post(url, headers=h, json={
+            "name": name,
+            "embedding": blob,
+            "embedding_dim": int(len(embedding)),
+            "questions_count": questions_count,
+            "enrolled_at": now,
+        })
+        if res.status_code == 409:
+            raise ValueError(f"Profil '{name}' există deja. Alege alt nume.")
+        res.raise_for_status()
+    except httpx.HTTPStatusError as e:
+        raise ValueError(f"DB error: {e.response.status_code} - {e.response.text}")
 
 
 def load_all_profiles() -> list[dict]:

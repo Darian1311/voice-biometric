@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from app.routes.api_key import verify_api_key
 from tools.db_manager import list_profiles, delete_profile
 
-router = APIRouter(prefix="/registry", tags=["registry"])
+router = APIRouter(prefix="/registry", tags=["registry"], dependencies=[Depends(verify_api_key)])
 
 
 @router.get("/profiles")

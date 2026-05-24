@@ -1,11 +1,12 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from app.config import THRESHOLD_VALID, THRESHOLD_SUSPECT
+from app.routes.api_key import verify_api_key
 from tools.audio_converter import webm_to_wav_bytes
 from tools.embedding_extractor import wav_bytes_to_embedding, cosine_similarity
 from tools.db_manager import load_all_profiles
 from tools.spoof_detector import analyze_spoof
 
-router = APIRouter(prefix="/detect", tags=["detection"])
+router = APIRouter(prefix="/detect", tags=["detection"], dependencies=[Depends(verify_api_key)])
 
 
 @router.post("/analyze")

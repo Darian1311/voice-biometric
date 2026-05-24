@@ -1,14 +1,15 @@
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends
 from pydantic import BaseModel
 
 from app.questions import select_enrollment_questions
 from app import session_store
 from app.config import ENROLLMENT_QUESTIONS
+from app.routes.api_key import verify_api_key
 from tools.audio_converter import webm_to_wav_bytes
 from tools.embedding_extractor import wav_bytes_to_embedding, average_embeddings
 from tools.db_manager import save_profile
 
-router = APIRouter(prefix="/enroll", tags=["enrollment"])
+router = APIRouter(prefix="/enroll", tags=["enrollment"], dependencies=[Depends(verify_api_key)])
 
 
 class StartBody(BaseModel):

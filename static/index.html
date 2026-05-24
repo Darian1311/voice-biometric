@@ -103,12 +103,14 @@
   .profile-del:hover { border-color: var(--red); color: var(--red); }
 
   .empty-state { color: var(--dim); font-size: 0.8rem; text-align: center; padding: 32px; }
+
 </style>
 </head>
 <body>
 
+
 <div class="header">
-  <h1>Voice Biometric</h1>
+<h1>Voice Biometric</h1>
   <p>Sistem de identificare vocală</p>
 </div>
 
@@ -192,6 +194,8 @@
 </div>
 
 <script>
+function authHeaders() { return {}; }
+
 // ── Tab switching ──
 function switchTab(name) {
   document.querySelectorAll('.tab').forEach((t,i) => t.classList.remove('active'));
@@ -269,7 +273,7 @@ async function sendEnrollChunk() {
     const fd = new FormData();
     fd.append('session_id', enrollSession);
     fd.append('audio', enrollBlob, 'audio.webm');
-    const r = await fetch('/enroll/answer', {method:'POST', body:fd});
+    const r = await fetch('/enroll/answer', {method:'POST', body:fd, headers: authHeaders()});
     const res = await r.json();
     if (!r.ok) throw new Error(res.detail || 'Eroare server ' + r.status);
     enrollDone = res.questions_done;
@@ -331,6 +335,7 @@ function scheduleDetectChunk() {
   detectRecorder.onstop = async () => {
     if (!detecting || detectSessionId !== mySession) return;
     document.getElementById('detect-timer').style.display = 'none';
+    document.getElementById('btn-stop-detect').disabled = true;
     setStatus('detect-status', 'Se analizează...');
     const blob = new Blob(detectChunks, {type: detectRecorder.mimeType});
     await sendDetectChunk(blob);
@@ -340,7 +345,9 @@ function scheduleDetectChunk() {
   detectRecorder.start();
   startTimer(7, mySession);
   setTimeout(() => {
-    if (detectRecorder && detectRecorder.state !== 'inactive') detectRecorder.stop();
+    if (detecting && detectSessionId === mySession && detectRecorder && detectRecorder.state === 'recording') {
+      detectRecorder.stop();
+    }
   }, 7000);
 }
 
@@ -356,7 +363,7 @@ async function sendDetectChunk(blob) {
   try {
     const fd = new FormData();
     fd.append('audio', blob, 'chunk.webm');
-    const res = await fetch('/detect/analyze', {method:'POST', body:fd}).then(r => r.json());
+    const res = await fetch('/detect/analyze', {method:'POST', body:fd, headers: authHeaders()}).then(r => r.json());
     updateGauge(res);
   } catch(e) {
     setStatus('detect-status', 'Eroare analiză: ' + e.message, 'err');
@@ -444,7 +451,7 @@ async function deleteProfile(name) {
 
 // ── Helpers ──
 async function api(method, path, body) {
-  const opts = {method, headers: {}};
+  const opts = {method, headers: {...authHeaders()}};
   if (body && method !== 'GET') { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
   const res = await fetch(path, opts);
   const data = await res.json();
